@@ -1,0 +1,125 @@
+<html>
+    <head>
+        <!-- Initiate Fugly Asthetics -->
+            <style>
+                    body {
+                        background-color: yellow;
+                        color: green;
+                    }
+                    #list {
+                        color: black;
+                    }
+            </style>
+        <!-- End Fugly Asthetics -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+
+    </head>
+    <body>
+        <p>hi here are you todos (click check mark to toggle): </p>
+        <input type="text" id="newTodo" /><input type="submit" onclick="insertTodo()"/>
+        <div id="list">
+        {% for item in todos if not item.deleted %}
+            <br />
+            <div>
+            {%- if item.completed -%}
+            <i class="fa fa-check" aria-hidden="true" style="color:green" onClick=uncompleteItem({{ item.id }})></i>
+            {% else %}
+            <i class="fa fa-check" aria-hidden="true" onClick=completeItem({{ item.id }})></i>
+            {%- endif %}
+            
+             :: {{ item.content }} <i class="fa fa-window-close" aria-hidden="true" style="color:red" onClick=deleteItem({{ item.id }})></i>
+            </div>
+        {% endfor %}
+    </div>
+        <br /><br />
+        <button name="name" value="value" type="submit" onclick="logout()">Logout</button>
+    </body>
+    <script>
+        function deleteItem( id) {
+            fetch("/deleteItem?id=" + id, {
+                    headers: {
+                    'Accept': '*/*',
+                    'Content-Type': 'application/json'
+                    },
+                    method: "GET",
+                })
+                .then((response) => {
+                    response.json().then((data) => {
+                        console.log(data)
+                        if (data.success) {
+                            location.href='/';
+                        }
+                    });
+                });
+        }
+        function completeItem( id) {
+            fetch("/completeItem?id=" + id, {
+                    headers: {
+                    'Accept': '*/*',
+                    'Content-Type': 'application/json'
+                    },
+                    method: "GET",
+                })
+                .then((response) => {
+                    response.json().then((data) => {
+                        console.log(data)
+                        if (data.success) {
+                            location.href='/';
+                        }
+                    });
+                });
+        }
+        function uncompleteItem( id) {
+            fetch("/uncompleteItem?id=" + id, {
+                    headers: {
+                    'Accept': '*/*',
+                    'Content-Type': 'application/json'
+                    },
+                    method: "GET",
+                })
+                .then((response) => {
+                    response.json().then((data) => {
+                        console.log(data)
+                        if (data.success) {
+                            location.href='/';
+                        }
+                    });
+                });
+        }
+    function setCookie(name,value,days) {
+                var expires = "";
+                if (days) {
+                    var date = new Date();
+                    date.setTime(date.getTime() + (days*24*60*60*1000));
+                    expires = "; expires=" + date.toUTCString();
+                }
+                document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+            }
+        function logout() {
+            setCookie('sillyauth', '', -1)
+            location.href = '/'
+        }
+
+        function insertTodo() {
+                var user = document.getElementById("newTodo").value;
+                if (user == "") return;
+
+                fetch("/newTodo?username=" + user, {
+                    headers: {
+                    'Accept': '*/*',
+                    'Content-Type': 'application/json'
+                    },
+                    method: "GET",
+                })
+                .then((response) => {
+                    response.json().then((data) => {
+                        console.log(data)
+                        if (data.success) {
+                            location.href='/';
+                        }
+                    });
+                });
+
+        }
+    </script>
+</html>

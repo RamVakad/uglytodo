@@ -1,0 +1,83 @@
+<html>
+    <head>
+        <!-- Initiate Fugly Asthetics -->
+            <style>
+                    body {
+                        background-color: yellow;
+                        color: green;
+                    }
+            </style>
+        <!-- End Fugly Asthetics -->
+        <title>FuglyTodoapp</title>
+    </head>
+    <body>
+        <p>Hello Hello welcome to Fugly Todo App This is the login page for the todo app pls input username to login with: <input type="text" id="username" /></p>
+        <!-- more fuglyness -->
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <input type="submit" onclick="signIn()"/>
+        <p> create new user: <input type="text" id="newUsername" /><input type="submit" onclick="signUp()"/></p>
+        <p id = "signInMessage"></p>
+        <script>
+            function setCookie(name,value,days) {
+                var expires = "";
+                if (days) {
+                    var date = new Date();
+                    date.setTime(date.getTime() + (days*24*60*60*1000));
+                    expires = "; expires=" + date.toUTCString();
+                }
+                document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+            }
+        function signIn() {
+            var user = document.getElementById("username").value;
+            if (user == "") return;
+
+            fetch("/auth?username=" + user, {
+                headers: {
+                'Accept': '*/*',
+                'Content-Type': 'application/json'
+                },
+                method: "GET",
+            })
+            .then((response) => {
+                response.json().then((data) => {
+                    console.log(data)
+                    if (!data.token) {
+                        document.getElementById("signInMessage").innerHTML = data.message;
+                    } else {
+                        setCookie('sillyauth',data.token,1);
+                        location.href='/';
+                    }
+                });
+            });            
+        }
+
+            function signUp() {
+                var user = document.getElementById("newUsername").value;
+                if (user == "") return;
+
+                fetch("/new?username=" + user, {
+                    headers: {
+                    'Accept': '*/*',
+                    'Content-Type': 'application/json'
+                    },
+                    method: "GET",
+                })
+                .then((response) => {
+                    response.json().then((data) => {
+                        console.log(data)
+                        if (!data.message) {
+                            document.getElementById("username").value = user;
+                            console.log("success")
+                            signIn();
+                        } else {
+                            document.getElementById("signInMessage").innerHTML = data.message;
+                        }
+                    });
+                });
+            }
+        </script>
+    </body>
+</html>
