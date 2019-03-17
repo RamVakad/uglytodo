@@ -22,12 +22,12 @@
             <br />
             <div>
             {%- if item.completed -%}
-            <i class="fa fa-check" aria-hidden="true" style="color:green" onClick=uncompleteItem({{ item.id }})></i>
+            <i class="fa fa-check" aria-hidden="true" style="color:green" onClick=uncompleteItem({{ item.content }})></i>
             {% else %}
-            <i class="fa fa-check" aria-hidden="true" onClick=completeItem({{ item.id }})></i>
+            <i class="fa fa-check" aria-hidden="true" onClick=completeItem({{ item.content }})></i>
             {%- endif %}
             
-             :: {{ item.content }} <i class="fa fa-window-close" aria-hidden="true" style="color:red" onClick=deleteItem({{ item.id }})></i>
+             :: {{ item.content }} <i class="fa fa-window-close" aria-hidden="true" style="color:red" onClick=deleteItem({{ item.content }})></i>
             </div>
         {% endfor %}
     </div>
