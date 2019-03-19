@@ -130,59 +130,152 @@ def newUser():
 
 
 
-
 @app.route("/newTodo", methods=['GET'])
+@requires_auth
 def new_todo():
+    username = request.userNameFromToken
     content = request.args.get("username")
-    # print(username)
-    r = requests.post('https://hunter-todo-api.herokuapp.com/todo-item', json={'content': content},
-                      cookies=request.cookies)
-    print(r.text)
-    if r.status_code == 201:
-        jsonified = json.loads(r.text)
-        print(jsonified)
-        return json.dumps({'success': True})
-    else:
-        return json.dumps({'message': 'fail create todo'})
+
+    try:
+        record = userDB.find_one({'username': username})
+        if record is None:
+             return json.dumps({'message': "user not found.", 'code': 7})
+        else:
+            todos = record['todos']
+            print(todos)
+            exists = False
+            for todo in todos:
+                if todo['content'] == content:
+                    exists = True
+            if not exists:
+                todos.append({'completed': False, 'content': content })
+                result = userDB.update_one(
+                    {"username": username},
+                    {
+                        "$set": {
+                            "todos": todos,
+                        }
+                    }
+                )
+                if result.matched_count > 0:
+                    return json.dumps({'success': True})
+                else:
+                    return json.dumps({'success': False, 'error': 'Adding todo failed for some reason', 'code': 998})
+            return json.dumps({'success': False})
+    except Exception as e:
+        print(e)
+        return json.dumps({'message': "Server error while checking if user exists.", 'code': 3})
 
 
 @app.route("/completeItem", methods=['GET'])
+@requires_auth
 def complete():
-    id = request.args.get("id")
-    r = requests.put('https://hunter-todo-api.herokuapp.com/todo-item/' + id, json={'completed': True},
-                     cookies=request.cookies)
-    print(r.text)
-    if r.status_code == 200:
-        jsonified = json.loads(r.text)
-        print(jsonified)
-        return json.dumps({'success': True})
-    else:
-        return json.dumps({'message': 'fail create user'})
+    username = request.userNameFromToken
+    content = request.args.get("id")
+
+    try:
+        record = userDB.find_one({'username': username})
+        if record is None:
+            return json.dumps({'message': "user not found.", 'code': 7})
+        else:
+            todos = record['todos']
+            print(todos)
+            exists = False
+            for todo in todos:
+                if todo['content'] == content:
+                    exists = True
+                    todo['completed'] = True
+            if exists:
+                result = userDB.update_one(
+                    {"username": username},
+                    {
+                        "$set": {
+                            "todos": todos,
+                        }
+                    }
+                )
+                if result.matched_count > 0:
+                    return json.dumps({'success': True})
+                else:
+                    return json.dumps({'success': False, 'error': 'Completing todo failed for some reason', 'code': 998})
+            return json.dumps({'success': False})
+    except Exception as e:
+        print(e)
+        return json.dumps({'message': "Server error while checking if user exists.", 'code': 3})
 
 
 @app.route("/uncompleteItem", methods=['GET'])
+@requires_auth
 def uncomplete():
-    id = request.args.get("id")
-    r = requests.put('https://hunter-todo-api.herokuapp.com/todo-item/' + id, json={'completed': False},
-                     cookies=request.cookies)
-    print(r.text)
-    if r.status_code == 200:
-        jsonified = json.loads(r.text)
-        print(jsonified)
-        return json.dumps({'success': True})
-    else:
-        return json.dumps({'message': 'fail create user'})
+    username = request.userNameFromToken
+    content = request.args.get("id")
+
+    try:
+        record = userDB.find_one({'username': username})
+        if record is None:
+            return json.dumps({'message': "user not found.", 'code': 7})
+        else:
+            todos = record['todos']
+            print(todos)
+            exists = False
+            for todo in todos:
+                if todo['content'] == content:
+                    exists = True
+                    todo['completed'] = False
+            if exists:
+                result = userDB.update_one(
+                    {"username": username},
+                    {
+                        "$set": {
+                            "todos": todos,
+                        }
+                    }
+                )
+                if result.matched_count > 0:
+                    return json.dumps({'success': True})
+                else:
+                    return json.dumps({'success': False, 'error': 'UnCompleting todo failed for some reason', 'code': 998})
+            return json.dumps({'success': False})
+    except Exception as e:
+        print(e)
+        return json.dumps({'message': "Server error while checking if user exists.", 'code': 3})
 
 
 @app.route("/deleteItem", methods=['GET'])
+@requires_auth
 def deleteItem():
-    id = request.args.get("id")
-    r = requests.delete('https://hunter-todo-api.herokuapp.com/todo-item/' + id, cookies=request.cookies)
-    print(r.status_code)
-    if r.status_code == 204:
-        return json.dumps({'success': True})
-    else:
-        return json.dumps({'message': 'fail create user'})
+    username = request.userNameFromToken
+    content = request.args.get("id")
+
+    try:
+        record = userDB.find_one({'username': username})
+        if record is None:
+            return json.dumps({'message': "user not found.", 'code': 7})
+        else:
+            todos = record['todos']
+            print(todos)
+            exists = False
+            for todo in todos:
+                if todo['content'] == content:
+                    exists = True
+                    todos.remove(todo)
+            if exists:
+                result = userDB.update_one(
+                    {"username": username},
+                    {
+                        "$set": {
+                            "todos": todos,
+                        }
+                    }
+                )
+                if result.matched_count > 0:
+                    return json.dumps({'success': True})
+                else:
+                    return json.dumps({'success': False, 'error': 'Deleting todo failed for some reason', 'code': 998})
+            return json.dumps({'success': False})
+    except Exception as e:
+        print(e)
+        return json.dumps({'message': "Server error while checking if user exists.", 'code': 3})
 
 
 if __name__ == "__main__":
